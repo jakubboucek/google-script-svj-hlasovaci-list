@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="cs">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <?!= include('Javascript'); ?>
+    <?!= include('Style'); ?>
+  </head>
+  <body>
+    <div class="container">
+      <div class="panel">
+        <button id="reload">Znovu načíst</button>
+        <span class="pull-right">
+          <button id="new-vote-sheet" class="action">Další hlasování »</button>
+        </span>
+      </div>
+    </div>
+    <div class="container" id="error" style="display:none">
+      <span class="error" id="message"></span>
+    </div>
+    <div class="container" id="content">
+      <table class="table">
+        <tr>
+          <td>Zobrazit:</td>
+          <td><input type="radio" name="show-only" id="show-blank" checked><label for="show-blank">nevyplněné</label>
+          <td><input type="radio" name="show-only" id="show-all"><label for="show-all">všechny</label>
+        </tr>
+        <tr>
+          <td>Vých. volba:</td>
+          <td><input type="radio" name="devault-vote" id="devault-vote-pro" value="Pro" checked><label for="devault-vote-pro">Pro</label>
+          <td><input type="radio" name="devault-vote" id="devault-vote-proti" value="Proti"><label for="devault-vote-proti">Proti</label>
+        </tr>
+      </table>
+      
+      <table class="table names" id="names" style="display:none">
+        <tr class="head">
+          <th>Hlasující</th>
+          <th>Volby</th>
+        </tr>
+      </table>
+      
+      <details open>
+        <summary>Hromadná volba</summary>
+        <table class="table">
+          <tr class="rest-vote">
+            <td>Všem zbylým</td>
+            <td class="vote-actions">
+              <button class="share">Pro</button>
+              <button class="create">Proti</button>
+              <button class="action">Zdržel</button>
+            </td>
+          </tr>
+        </table>
+      </details>
+
+      <details>
+        <summary class="gray">Další možnosti</summary>
+        <div class="panel">
+          <button id="clear-all" class="create">Vymazat všechny hlasy</button>
+        </div>
+      </details>
+    </div>
+  </body>
+</html>

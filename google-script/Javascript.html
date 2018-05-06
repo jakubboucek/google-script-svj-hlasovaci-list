@@ -1,0 +1,145 @@
+<script>
+  (function(){
+    var $names;
+  
+    $(document).ready(function(){
+      init();
+    });
+    
+    function init() {
+      $names = $('#names');
+      $('input[name="show-only"]').click(updateFilledFilter);
+      $('#reload').click(reloadNames);
+      $('#new-vote-sheet').click(createNewVoteSheet);
+      $('#clear-all').click(clearAll);
+      $('.rest-vote button').click(voteRest);      
+      $names.on('click','.vote-default', voteDefault);
+      $names.on('click','.vote-actions button', voteIndividual);      
+      
+      updateFilledFilter();
+      loadAndFillNames();
+      
+    }
+    
+    function handleApiError(error) {
+      $('#content').hide();
+      $('#error').show();
+      $('#error #message').text(error.message);
+    }
+    
+    function resetError() {
+      $('#content').show();
+      $('#error').hide();
+    }
+    
+    function clearAll() {
+      resetNames();
+      google.script.run.withSuccessHandler(reloadNames).withFailureHandler(handleApiError).clearAllVotes();
+    }
+    
+    function createNewVoteSheet() {
+      google.script.run.withSuccessHandler(reloadNames).withFailureHandler(handleApiError).createNewVoteSheet();
+    }
+    
+    function loadAndFillNames() {
+      google.script.run.withSuccessHandler(fillNames).withFailureHandler(handleApiError).getCurrentNames();
+    }
+    
+    function reloadNames() {
+      resetError();
+      resetNames();
+      loadAndFillNames();
+    }
+    
+    function resetNames() {
+      $names.hide();
+      $('tr:not(.head)', $names).remove();
+      $('.rest-vote button').prop('disabled', false); 
+    }
+    
+    function fillNames(names) {
+      for(i in names) {
+        var name = names[i];
+        
+        fillName(name);
+        
+      }
+      
+      $names.show();
+    }
+    
+    function fillName(name) {
+      var tr = $('<tr><td><a class="vote-default"></a></td><td class="vote-actions"><button>Pro</button><button>Proti</button><button>Zdržel</button></td></tr>');
+      
+      tr.data('name', name.name);
+      
+      if(name.filled) {
+        tr.addClass('filled');
+      }
+      
+      $('a',tr).text(name.name);
+      
+      $names.append(tr);
+    }
+    
+    function updateFilledFilter() {
+      if($('#show-blank').prop("checked")) {
+        $names.addClass('only-blank');
+      } else {
+        $names.removeClass('only-blank');
+      }
+    }
+    
+    function voteDefault(e){
+      e.preventDefault();
+      var tr = $(this).closest('tr');
+      var value = $('input[name="devault-vote"]:checked').val();
+      vote(tr, value);
+    }
+    
+    function voteIndividual(){
+      var tr = $(this).closest('tr');
+      var value = $(this).text();
+      
+      vote(tr, value);
+    }
+    
+    function voteRest(){
+      var value = $(this).text();      
+      $('button', $(this).closest('tr')).prop('disabled', true);
+      google.script.run.withFailureHandler(handleApiError).voteRest(value);
+    }
+    
+    function vote(tr, shortValue) {
+      var name = tr.data('name');
+      var value = shortValue.replace('Zdržel', 'Zdržel se');
+      
+      showVoteAccept(tr, shortValue);
+      google.script.run.withFailureHandler(handleApiError).vote(name, value);
+    }
+      
+    function showVoteAccept(tr, value) {
+      // @see https://developers.google.com/apps-script/add-ons/css#buttons
+      var classMap = {
+        'Pro': 'share',
+        'Proti': 'create',
+        'Zdržel': 'action',
+      };
+      
+      $('button', tr).each(function(){
+        var $button = $(this);
+        if($button.text() == value) {
+          $button.addClass(classMap[value]);
+        }
+      });
+      
+      if($('#show-blank').prop("checked")) {
+        $(tr).fadeOut(300, function(){
+          $(tr).addClass('filled').removeAttr('style');
+        });
+      } else {
+        $(tr).addClass('filled');
+      }
+    }
+  })();
+</script>
