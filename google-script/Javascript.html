@@ -1,144 +1,141 @@
 <script>
-    (function () {
-        var $names;
+    window.addEventListener('DOMContentLoaded', () => {
+        (($) => {
+            let $names;
 
-        $(document).ready(function () {
-            init();
-        });
+            $(document).ready(init);
 
-        function init() {
-            $names = $('#names');
-            $('input[name="show-only"]').click(updateFilledFilter);
-            $('#reload').click(reloadNames);
-            $('#new-vote-sheet').click(createNewVoteSheet);
-            $('#clear-all').click(clearAll);
-            $('.rest-vote button').click(voteRest);
-            $names.on('click', '.vote-default', voteDefault);
-            $names.on('click', '.vote-actions button', voteIndividual);
+            function init() {
+                $names = $('#names');
+                $('input[name="show-only"]').click(updateFilledFilter);
+                $('#reload').click(reloadNames);
+                $('#new-vote-sheet').click(createNewVoteSheet);
+                $('#clear-all').click(clearAll);
+                $('.rest-vote button').click(voteRest);
+                $names.on('click', '.vote-default', voteDefault);
+                $names.on('click', '.vote-actions button', voteIndividual);
 
-            updateFilledFilter();
-            loadAndFillNames();
-
-        }
-
-        function handleApiError(error) {
-            $('#content').hide();
-            $('#error').show();
-            $('#error #message').text(error.message);
-        }
-
-        function resetError() {
-            $('#content').show();
-            $('#error').hide();
-        }
-
-        function clearAll() {
-            resetNames();
-            google.script.run.withSuccessHandler(reloadNames).withFailureHandler(handleApiError).clearAllVotes();
-        }
-
-        function createNewVoteSheet() {
-            google.script.run.withSuccessHandler(reloadNames).withFailureHandler(handleApiError).createNewVoteSheet();
-        }
-
-        function loadAndFillNames() {
-            google.script.run.withSuccessHandler(fillNames).withFailureHandler(handleApiError).getCurrentNames();
-        }
-
-        function reloadNames() {
-            resetError();
-            resetNames();
-            loadAndFillNames();
-        }
-
-        function resetNames() {
-            $names.hide();
-            $('tr:not(.head)', $names).remove();
-            $('.rest-vote button').prop('disabled', false);
-        }
-
-        function fillNames(names) {
-            for (i in names) {
-                var name = names[i];
-
-                fillName(name);
-
+                updateFilledFilter();
+                loadAndFillNames();
             }
 
-            $names.show();
-        }
-
-        function fillName(name) {
-            var tr = $('<tr><td><a class="vote-default"></a></td><td class="vote-actions"><button value="Pro">Pro</button><button value="Proti">Proti</button><button value="Zdržel se">Zdržel</button></td></tr>');
-
-            tr.data('name', name.name);
-
-            if (name.filled) {
-                tr.addClass('filled');
+            function handleApiError(error) {
+                $('#content').hide();
+                $('#error').show();
+                $('#error #message').text(error.message);
             }
 
-            $('a', tr).text(name.name);
-
-            $names.append(tr);
-        }
-
-        function updateFilledFilter() {
-            if ($('#show-blank').prop("checked")) {
-                $names.addClass('only-blank');
-            } else {
-                $names.removeClass('only-blank');
+            function resetError() {
+                $('#content').show();
+                $('#error').hide();
             }
-        }
 
-        function voteDefault(e) {
-            e.preventDefault();
-            var tr = $(this).closest('tr');
-            var value = $('input[name="devault-vote"]:checked').val();
-            vote(tr, value);
-        }
+            function clearAll() {
+                resetNames();
+                google.script.run.withSuccessHandler(reloadNames).withFailureHandler(handleApiError).clearAllVotes();
+            }
 
-        function voteIndividual() {
-            var tr = $(this).closest('tr');
-            var value = $(this).val();
+            function createNewVoteSheet() {
+                google.script.run.withSuccessHandler(reloadNames).withFailureHandler(handleApiError).createNewVoteSheet();
+            }
 
-            vote(tr, value);
-        }
+            function loadAndFillNames() {
+                google.script.run.withSuccessHandler(fillNames).withFailureHandler(handleApiError).getCurrentNames();
+            }
 
-        function voteRest() {
-            var value = $(this).val();
-            $('button', $(this).closest('tr')).prop('disabled', true);
-            google.script.run.withFailureHandler(handleApiError).voteRest(value);
-        }
+            function reloadNames() {
+                resetError();
+                resetNames();
+                loadAndFillNames();
+            }
 
-        function vote(tr, value) {
-            var name = tr.data('name');
+            function resetNames() {
+                $names.hide();
+                $('tr:not(.head)', $names).remove();
+                $('.rest-vote button').prop('disabled', false);
+            }
 
-            showVoteAccept(tr, value);
-            google.script.run.withFailureHandler(handleApiError).vote(name, value);
-        }
-
-        function showVoteAccept(tr, value) {
-            // @see https://developers.google.com/apps-script/add-ons/css#buttons
-            var classMap = {
-                'Pro': 'share',
-                'Proti': 'create',
-                'Zdržel': 'action',
-            };
-
-            $('button', tr).each(function () {
-                var $button = $(this);
-                if ($button.val() == value) {
-                    $button.addClass(classMap[value]);
+            function fillNames(names) {
+                resetNames();
+                for (const name of names) {
+                    fillName(name);
                 }
-            });
 
-            if ($('#show-blank').prop("checked")) {
-                $(tr).fadeOut(300, function () {
-                    $(tr).addClass('filled').removeAttr('style');
-                });
-            } else {
-                $(tr).addClass('filled');
+                $names.show();
             }
-        }
-    })();
+
+            function fillName(name) {
+                const tr = $('<tr><td><a class="vote-default"></a></td><td class="vote-actions"><button value="Pro">Pro</button><button value="Proti">Proti</button><button value="Zdržel se">Zdržel</button></td></tr>');
+
+                tr.data('name', name.name);
+
+                if (name.filled) {
+                    tr.addClass('filled');
+                }
+
+                $('a', tr).text(name.name);
+
+                $names.append(tr);
+            }
+
+            function updateFilledFilter() {
+                if ($('#show-blank').prop('checked')) {
+                    $names.addClass('only-blank');
+                } else {
+                    $names.removeClass('only-blank');
+                }
+            }
+
+            function voteDefault(e) {
+                e.preventDefault();
+                const tr = $(this).closest('tr');
+                const value = $('input[name="devault-vote"]:checked').val();
+                vote(tr, value);
+            }
+
+            function voteIndividual() {
+                const tr = $(this).closest('tr');
+                const value = $(this).val();
+
+                vote(tr, value);
+            }
+
+            function voteRest() {
+                const value = $(this).val();
+                $('button', $(this).closest('tr')).prop('disabled', true);
+                google.script.run.withFailureHandler(handleApiError).voteRest(value);
+            }
+
+            function vote(tr, value) {
+                const name = tr.data('name');
+
+                showVoteAccept(tr, value);
+                google.script.run.withFailureHandler(handleApiError).vote(name, value);
+            }
+
+            function showVoteAccept(tr, value) {
+                // @see https://developers.google.com/apps-script/add-ons/css#buttons
+                const classMap = {
+                    'Pro': 'share',
+                    'Proti': 'create',
+                    'Zdržel se': 'action',
+                };
+
+                $('button', tr).each((i, button) => {
+                    const $button = $(button);
+                    if ($button.val() === value) {
+                        $button.addClass(classMap[value]);
+                    }
+                });
+
+                if ($('#show-blank').prop('checked')) {
+                    $(tr).fadeOut(300, () => {
+                        $(tr).addClass('filled').removeAttr('style');
+                    });
+                } else {
+                    $(tr).addClass('filled');
+                }
+            }
+        })(jQuery);
+    });
 </script>
