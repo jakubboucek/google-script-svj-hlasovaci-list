@@ -69,7 +69,7 @@
         }
 
         function fillName(name) {
-            var tr = $('<tr><td><a class="vote-default"></a></td><td class="vote-actions"><button>Pro</button><button>Proti</button><button>Zdržel</button></td></tr>');
+            var tr = $('<tr><td><a class="vote-default"></a></td><td class="vote-actions"><button value="Pro">Pro</button><button value="Proti">Proti</button><button value="Zdržel se">Zdržel</button></td></tr>');
 
             tr.data('name', name.name);
 
@@ -99,22 +99,21 @@
 
         function voteIndividual() {
             var tr = $(this).closest('tr');
-            var value = $(this).text();
+            var value = $(this).val();
 
             vote(tr, value);
         }
 
         function voteRest() {
-            var value = $(this).text();
+            var value = $(this).val();
             $('button', $(this).closest('tr')).prop('disabled', true);
             google.script.run.withFailureHandler(handleApiError).voteRest(value);
         }
 
-        function vote(tr, shortValue) {
+        function vote(tr, value) {
             var name = tr.data('name');
-            var value = shortValue.replace('Zdržel', 'Zdržel se');
 
-            showVoteAccept(tr, shortValue);
+            showVoteAccept(tr, value);
             google.script.run.withFailureHandler(handleApiError).vote(name, value);
         }
 
@@ -128,7 +127,7 @@
 
             $('button', tr).each(function () {
                 var $button = $(this);
-                if ($button.text() == value) {
+                if ($button.val() == value) {
                     $button.addClass(classMap[value]);
                 }
             });
