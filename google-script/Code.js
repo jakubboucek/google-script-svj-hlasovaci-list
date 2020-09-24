@@ -75,7 +75,7 @@ function getCurrentNames() {
         if (isNew) order.push(name);
     }
 
-    order.sort();
+    order.sort((a, b) => a.localeCompare(b, 'cs-CZ'));
 
     const output = [];
     for (const name of order) {
