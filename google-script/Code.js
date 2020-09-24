@@ -1,5 +1,20 @@
 var VOTE_LIST_FIRST_NAME_ROW = 15;
 
+function clearOldVotes() {
+  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  const sheets = spreadsheet.getSheets();
+  
+  sheets.shift(); // List
+  sheets.shift(); // Hlas 1
+  
+  for(const sheet of sheets) {
+    spreadsheet.deleteSheet(sheet);
+  }
+  
+  spreadsheet.getSheetByName("Hlasování č. 1").activate();
+  clearSheetInludePersons();
+}
+
 function onOpen() {
     SpreadsheetApp.getUi()
         .createMenu('Hlasovací nástoje')
@@ -108,6 +123,19 @@ function clearAll() {
     sheet = getNamesSheet();
     clearAllVotes();
     sheet.getRange("A7").setValue('');
+}
+
+function clearSheetInludePersons() {
+    sheet = getNamesSheet();
+    const namesRange = getNamesRange();
+    
+    const values = namesRange.getValues();
+    for(const i in values) {
+      values[i][0] = '';
+    }
+    namesRange.setValues(values);
+    
+    clearAllVotes();
 }
 
 function createNewVoteSheet() {
